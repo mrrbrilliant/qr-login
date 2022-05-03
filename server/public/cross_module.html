@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <script type="module">
+            import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
+            const endpoint = "http://localhost:4000";
+
+            const socket = io(endpoint, {
+                extraHeaders: {
+                    authorization: window.localStorage.getItem("token") || "",
+                },
+            });
+
+            const socketReady = new Event("socketReady", {
+                bubbles: true,
+                detail: { text: "Global socket connection is ready" },
+            });
+
+            socket.on("connect", () => {
+                window.socket = socket;
+                window.dispatchEvent(event);
+            });
+        </script>
+        <script>
+            window.addEventListener("socketReady", function (e) {
+                const socket = window.socket;
+                // do sth here
+            });
+        </script>
+    </body>
+</html>

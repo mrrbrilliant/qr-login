@@ -5,6 +5,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const path = require("path");
+const lodash = require("lodash");
 
 app.use(express.static("public"));
 
@@ -44,12 +45,64 @@ io.on("connection", (socket) => {
         // the user that scan must the one who already login
         // he already has indentity from this auth token
         // so we can re-issue and new auth token for others
-        const authorization = socket.request.headers.authorization;
+        // const authorization = socket.request.headers.authorization;
+        try {
+            const authorization = lodash.get(
+                socket,
+                ["request", "headers", "authorization"],
+                null
+            );
 
-        const decoded = jwt.verify(authorization, "supersecuresecret");
+            if (!authorization) {
+                let error = new Error("Authorization Error");
+                error["detail"] = {
+                    status: "error",
+                    message: "Authorization header is missing",
+                };
+                throw error;
+            }
 
-        const token = jwt.sign({ user: decoded.user }, "supersecuresecret");
-        io.to(data.id).emit("/auth/approved", { token });
+            const decoded = jwt.verify(authorization, "supersecuresecret");
+            if (!decoded) {
+                let error = new Error("Authorization Error");
+                error["detail"] = {
+                    status: "error",
+                    message: "Invalid JWT token",
+                };
+                throw error;
+            }
+
+            const user = lodash.get(decoded, ["user"], null);
+            if (!user) {
+                let error = new Error("Authorization Error");
+                error["detail"] = {
+                    status: "error",
+                    message: "JWT missing info",
+                };
+                throw error;
+            }
+
+            const token = jwt.sign({ user }, "supersecuresecret");
+
+            if (!token) {
+                let error = new Error("Authorization Error");
+                error["detail"] = {
+                    status: "error",
+                    message: "Unable to sign new token",
+                };
+                throw error;
+            }
+
+            io.to(data.id).emit("/auth/approved", { token });
+        } catch (error) {
+            if (error) {
+                socket.emit("error", error);
+                return;
+            }
+        }
+    });
+    socket.on("hi", (data, callback) => {
+        callback("ho");
     });
 });
 
