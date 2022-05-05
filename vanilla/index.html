@@ -27,12 +27,24 @@
             const jwt_decode = window.jwt_decode;
 
             const userinfo = document.querySelector("#user-info");
-            const token = window.localStorage.getItem("token") || null;
-            if (!token) {
+
+            const method = window.localStorage.getItem("method") || null;
+
+            if (!method) {
                 window.location.replace("/login");
             }
-            let decoded = jwt_decode(token);
-            userinfo.innerHTML = JSON.stringify(decoded, null, 4);
+
+            if (method === "web2") {
+                const token = window.localStorage.getItem("token") || null;
+                const decoded = jwt_decode(token);
+                userinfo.innerHTML = JSON.stringify(decoded);
+            }
+
+            if (method === "web3") {
+                const privateKey =
+                    window.localStorage.getItem("privateKey") || null;
+                userinfo.innerHTML = privateKey;
+            }
         </script>
     </body>
 </html>
