@@ -21,18 +21,6 @@ app.get("/scan", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "scan.html"));
 });
 
-app.get("/aes", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "aes.html"));
-});
-
-app.get("/ende", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "ende.html"));
-});
-
-app.get("/keypair", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "keypair.html"));
-});
-
 const io = new Server(server, {
     cors: {
         origin: "*",

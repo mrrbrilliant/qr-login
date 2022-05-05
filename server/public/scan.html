@@ -4,13 +4,45 @@
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            href="https://cdn.jsdelivr.net/npm/daisyui@2.14.3/dist/full.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <script src="https://cdn.tailwindcss.com"></script>
         <title>Scan</title>
         <script src="https://unpkg.com/html5-qrcode"></script>
         <script src="./jwt-decode.js"></script>
     </head>
     <body>
-        <div id="qr-reader" style="width: 500px"></div>
-        <div id="qr-reader-results"></div>
+        <div
+            class="w-full h-screen flex place-content-center place-items-center"
+        >
+            <!-- 
+            <div id="qr-reader-results"></div>
+            <input type="text" name="privatekey" id="privatekey" c/> -->
+            <div class="card w-96 bg-neutral text-neutral-content">
+                <div class="card-body items-center text-center">
+                    <div
+                        id="qr-reader"
+                        class="w-full !border-none flex flex-col place-items-center"
+                    ></div>
+
+                    <div class="form-control w-full max-w-xs">
+                        <label class="label">
+                            <span class="label-text">Your fake privateKey</span>
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="Type here"
+                            class="input input-bordered w-full max-w-xs"
+                            id="privateKey"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script type="module">
             // >>>>>>>>> Export key >>>>>>>>>>
             function ab2str(buf) {
@@ -148,33 +180,6 @@
 
             // >>>>>>>>>> Generate key >>>>>>>>>>>
 
-            // window.crypto.subtle
-            //     .generateKey(
-            //         {
-            //             name: "RSA-OAEP",
-            //             // Consider using a 4096-bit key for systems that require long-term security
-            //             modulusLength: 1024,
-            //             publicExponent: new Uint8Array([1, 0, 1]),
-            //             hash: "SHA-256",
-            //         },
-            //         true,
-            //         ["encrypt", "decrypt"]
-            //     )
-            //     .then(async (keyPair) => {
-            //         const keys = await exportCryptoKey(keyPair);
-            //         QrData.publicKey = keys.pub;
-            //         const keypairsReadyEvent = new CustomEvent("keypairsReady");
-            //         window.dispatchEvent(keypairsReadyEvent);
-            //         socket.emit("/auth/qr-request", QrData);
-
-            //         const pub = await importPublicKey(keys.pub);
-            //         const pri = await importPrivateKey(keys.pri);
-
-            //         let enc = await encryptMessage(pub, "hello");
-            //         let dec = await decryptMessage(pri, enc);
-            //         console.log(dec);
-            //     });
-
             // <<<<<<<<<< Generate key <<<<<<<<<<<
 
             import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
@@ -198,13 +203,11 @@
                     ++countResults;
                     lastResult = decodedText;
                     try {
+                        const secret = document.querySelector("#privateKey");
                         let json = JSON.parse(decodedText);
                         console.log(json);
                         const pub = await importPublicKey(json.publicKey);
-                        let enc = await encryptMessage(
-                            pub,
-                            "brilliant-privateKey"
-                        );
+                        let enc = await encryptMessage(pub, secret.value);
                         let encText = ab2str(enc);
 
                         socket.emit("/auth/qr-scan", {
